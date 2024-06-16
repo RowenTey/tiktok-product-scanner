@@ -70,3 +70,8 @@ button:focus-visible {
 		background-color: #f9f9f9;
 	}
 }
+
+/* video player */
+video {
+	object-fit: cover;
+}
