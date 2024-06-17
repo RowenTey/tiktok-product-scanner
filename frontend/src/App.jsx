@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import VideoUploadPage from "./pages/VideoUploadPage";
 import Navbar from "./components/Navbar";
+import ProfilePage from "./pages/ProfilePage";
 
 const App = () => {
 	return (
@@ -12,6 +13,7 @@ const App = () => {
 						<Routes>
 							<Route path="/" element={<HomePage />} />
 							<Route path="/upload" element={<VideoUploadPage />} />
+							<Route path="/profile" element={<ProfilePage />} />
 						</Routes>
 					</div>
 					<Navbar />

@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { uploadVideo } from "../api";
 
 const VideoUploadPage = () => {
 	const [title, setTitle] = useState("");
 	const [video, setVideo] = useState(null);
-	const [videoName, setVideoName] = useState(""); // State to hold the video file name
+	const [videoName, setVideoName] = useState("");
 
 	const handleTitleChange = (event) => {
 		setTitle(event.target.value);
@@ -12,10 +13,10 @@ const VideoUploadPage = () => {
 	const handleVideoChange = (event) => {
 		const selectedFile = event.target.files[0];
 		setVideo(selectedFile);
-		setVideoName(selectedFile ? selectedFile.name : ""); // Update the video file name
+		setVideoName(selectedFile ? selectedFile.name : "");
 	};
 
-	const handleSubmit = (event) => {
+	const handleSubmit = async (event) => {
 		event.preventDefault();
 
 		if (!title || !video) {
@@ -23,18 +24,27 @@ const VideoUploadPage = () => {
 			return;
 		}
 
-		// Handle the form submission
 		const formData = new FormData();
 		formData.append("title", title);
 		formData.append("video", video);
 
-		// Example: Send data to the server
-		// fetch('/upload', {
-		//   method: 'POST',
-		//   body: formData,
-		// }).then((response) => {
-		//   // Handle the response from the server
-		// });
+		try {
+			const response = await uploadVideo(formData);
+
+			if (response.status === 200) {
+				alert("Upload successful");
+
+				// Clear form fields
+				setTitle("");
+				setVideo(null);
+				setVideoName("");
+			} else {
+				alert("Upload failed");
+			}
+		} catch (error) {
+			console.error("Upload failed:", error);
+			alert("Upload failed");
+		}
 
 		console.log("Form submitted:", title, video);
 	};

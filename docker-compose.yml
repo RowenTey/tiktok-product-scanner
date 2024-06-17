@@ -8,18 +8,32 @@ services:
   #   volumes:
   #     - ./backend:/app
   #     - /app/node_modules
+
   # client:
   #   build: ./frontend
   #   container_name: frontend_c
   #   ports:
   #     - "5173:5173"
-  mongodb_container:
+
+  mongodb:
     image: mongo:latest
     ports:
-      - 27017:27017
+      - "27017:27017"
     command: mongod --noauth
     volumes:
-      - mongodb_data_container:/data/db
+      - mongodb_data:/data/db
+
+  minio:
+    image: docker.io/bitnami/minio:2024
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: team-cooked
+      MINIO_ROOT_PASSWORD: admin123
+    volumes:
+      - minio_data:/data
 
 volumes:
-  mongodb_data_container:
+  mongodb_data:
+  minio_data:

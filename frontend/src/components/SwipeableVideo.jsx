@@ -65,7 +65,7 @@ const SwipeableVideoList = () => {
 								onProgress={handleProgress}
 							/>
 						)}
-						<div className="absolute bottom-10 text-white text-center">
+						<div className="absolute bottom-10 text-white">
 							<h1 className="text-2xl font-bold">{video.title}</h1>
 						</div>
 						<div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
