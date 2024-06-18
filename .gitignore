@@ -1,1 +1,4 @@
 node_modules/
+
+# ffmpeg generted files
+ffmpeg/output
