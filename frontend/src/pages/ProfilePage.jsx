@@ -21,7 +21,7 @@ const fetchMockProfile = () => {
 	return new Promise((resolve) => {
 		setTimeout(() => {
 			resolve({ data: mockProfileData });
-		}, 2000);
+		}, 1000);
 	});
 };
 
@@ -44,8 +44,8 @@ const ProfilePage = () => {
 
 	if (!profile) {
 		return (
-			<div className="h-full w-full flex items-center justify-center">
-				<div className="animate-spin h-5 w-5 mr-3 bg-red-100"></div>
+			<div className="h-full w-full bg-white flex items-center justify-center">
+				<div className="animate-spin h-5 w-5 mr-3 rounded border-y-4 bg-red-100"></div>
 			</div>
 		);
 	}
