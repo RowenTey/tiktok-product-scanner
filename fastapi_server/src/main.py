@@ -1,8 +1,15 @@
 from fastapi import FastAPI
 from src.routers import api_router
+from starlette.middleware.cors import CORSMiddleware
 import uvicorn
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():

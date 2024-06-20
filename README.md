@@ -41,7 +41,8 @@
    docker-compose build
    docker-compose up
    ```
-3. Server is at 127.0.0.1:8000
+3. Server is at http://127.0.0.1:8000
+4. Docs is at http://127.0.0.1:8000/docs
 
 ## Run object detection using YOLOv5
 
