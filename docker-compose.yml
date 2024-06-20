@@ -34,6 +34,13 @@ services:
     volumes:
       - minio_data:/data
 
+  fastapi_server:
+    build: ./fastapi_server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fastapi_server:/app
+
 volumes:
   mongodb_data:
   minio_data:

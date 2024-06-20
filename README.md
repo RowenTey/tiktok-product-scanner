@@ -7,55 +7,72 @@
    ```
    npm install
    ```
-4. Run
+3. Run
    ```
    npm run dev
    ```
 
 ## Run MongoDB container
 
-Under root directory
+1. Go to `root` directory
+2. Run
+   ```
+   docker-compose build
+   docker-compose up
+   ```
 
-```
-docker-compose build
-docker-compose up
-```
+## Run backend (express) server
 
-## Run backend server
+1. Go to `backend` directory
+2. Install libraries
+   ```
+   npm install
+   ```
+3. Run
+   ```
+   npm run dev
+   ```
 
-npm install first
+## Run backend (fastapi) server
 
-```
-cd ./backend
-npm run dev
-```
+1. Go to `root` directory
+2. Run
+   ```
+   docker-compose build
+   docker-compose up
+   ```
+3. Server is at 127.0.0.1:8000
 
 ## Run object detection using YOLOv5
 
 Remember to use Python v3.8
 
 1. Head over to `object-detection` directory:
-   * ```
+
+   - ```
      cd ./object-detection
      ```
 
-1. Create environment: 
-   * ```
+1. Create environment:
+
+   - ```
      python -m virtualenv venv
      ```
 
-2. Activate environment:
-   * ```
+1. Activate environment:
+
+   - ```
      . venv/bin/activate # macOS/Linux
      ./venv/scripts/activate # Windows
      ```
 
-3. Install all dependencies:
-   * ```
+1. Install all dependencies:
+
+   - ```
      pip install -r requirements.txt
      ```
 
-4. Start detection script:
-   * ```
+1. Start detection script:
+   - ```
      python detect.py --source 0    # Your default webcam should be 0, can try other values if 0 throws an error
      ```
