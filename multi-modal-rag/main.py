@@ -1,14 +1,7 @@
-import os
-import ffmpeg
+import whisper
+import matplotlib.pyplot as plt
 import moviepy.editor as mp
 from moviepy.video.io.VideoFileClip import VideoFileClip
-import numpy as np
-import matplotlib.pyplot as plt
-import whisper
-import openai
-
-# Set your OpenAI API key
-openai.api_key = 'your_openai_api_key'
 
 
 def extract_frames(video_path, num_frames=9):
