@@ -2,4 +2,7 @@ node_modules/
 
 # ffmpeg generted files
 ffmpeg/output
+
+# python virtual env
 venv/
+__pycache__/
