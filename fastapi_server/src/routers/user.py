@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Query
 from starlette.responses import JSONResponse
-from src.core.responses import success_response
-from src.schemas.models import User
+from core.responses import success_response
+from schemas.models import User
 
 router = APIRouter()
+
 
 @router.get("/users")
 async def get_users(
