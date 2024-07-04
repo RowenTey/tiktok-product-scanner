@@ -6,7 +6,78 @@ import base64
 import subprocess
 import numpy as np
 import moviepy.editor as mp
+from .transformer import phi3Vision
 from PIL import Image
+
+
+def remove_files_and_directories(target_directory, video_path, audio_path):
+    """
+    Removes all files and directories recursively from the target_directory.
+    Also removes the video_path and audio_path if they exist.
+
+    Parameters:
+        target_directory (str): Path to the target directory.
+        video_path (str): Path to the video file to be removed.
+        audio_path (str): Path to the audio file to be removed.
+    """
+    # Remove all files and directories in the target directory
+    if os.path.exists(target_directory):
+        for root, dirs, files in os.walk(target_directory, topdown=False):
+            for name in files:
+                file_path = os.path.join(root, name)
+                try:
+                    os.remove(file_path)
+                    print(f"Removed file: {file_path}")
+                except Exception as e:
+                    print(f"Error removing file: {file_path}. Error: {e}")
+            for name in dirs:
+                dir_path = os.path.join(root, name)
+                try:
+                    os.rmdir(dir_path)
+                    print(f"Removed directory: {dir_path}")
+                except Exception as e:
+                    print(f"Error removing directory: {dir_path}. Error: {e}")
+
+    # Remove the video file if it exists
+    if os.path.exists(video_path):
+        try:
+            os.remove(video_path)
+            print(f"Removed video file: {video_path}")
+        except Exception as e:
+            print(f"Error removing video file: {video_path}. Error: {e}")
+
+    # Remove the audio file if it exists
+    if os.path.exists(audio_path):
+        try:
+            os.remove(audio_path)
+            print(f"Removed audio file: {audio_path}")
+        except Exception as e:
+            print(f"Error removing audio file: {audio_path}. Error: {e}")
+
+
+def resize_image_by_half(input_path: str, output_path: str):
+    """
+    Resize an image by reducing its resolution by half and save it to the output path.
+
+    Parameters:
+    - input_path (str): Path to the input image file.
+    - output_path (str): Path to save the resized image file.
+    """
+    try:
+        # Open the image file
+        with Image.open(input_path) as img:
+            # Calculate the new dimensions
+            new_width = img.width // 2
+            new_height = img.height // 2
+
+            # Resize the image
+            resized_img = img.resize((new_width, new_height), Image.ANTIALIAS)
+
+            # Save the resized image
+            resized_img.save(output_path)
+        print(f"Image successfully resized and saved to {output_path}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 def ensure_minimum_keyframes(video_buffer, output_directory="output/keyframes", min_frames=9, start_threshold=0.3, step=0.01, min_threshold=0.025):
@@ -17,12 +88,9 @@ def ensure_minimum_keyframes(video_buffer, output_directory="output/keyframes", 
 
     is_last_threshold = False
     while current_threshold >= min_threshold:
-        if current_threshold - step < min_threshold:
-            is_last_threshold = True
-
         # Extract keyframes with the current threshold
         extract_keyframes_from_buffer(
-            video_buffer, output_directory, current_threshold, is_last_threshold)
+            video_buffer, output_directory, current_threshold)
 
         # Count the number of extracted keyframes
         num_keyframes = len([name for name in os.listdir(
@@ -41,7 +109,7 @@ def ensure_minimum_keyframes(video_buffer, output_directory="output/keyframes", 
         f"Minimum threshold reached. Extracted {num_keyframes} keyframes with threshold {current_threshold}")
 
 
-def extract_keyframes_from_buffer(video_buffer, output_directory="output/keyframes", threshold=0.3, should_delete_vid=False):
+def extract_keyframes_from_buffer(video_buffer, output_directory="output/keyframes", threshold=0.3):
     """
     Extracts key frames from a video buffer using FFmpeg and saves them in the specified output directory.
 
@@ -63,7 +131,7 @@ def extract_keyframes_from_buffer(video_buffer, output_directory="output/keyfram
             shutil.rmtree(file_path)
 
     # Write the buffer to a temporary file to use with FFmpeg
-    temp_video_path = "temp_video.mp4"
+    temp_video_path = "output/temp_video.mp4"
     if not os.path.exists(temp_video_path):
         with open(temp_video_path, "wb") as temp_file:
             temp_file.write(video_buffer.read())
@@ -71,7 +139,7 @@ def extract_keyframes_from_buffer(video_buffer, output_directory="output/keyfram
 
     # Construct the FFmpeg command
     ffmpeg_command = [
-        "ffmpeg",
+        "C:\\Users\\leeja\\Documents\\VSCode\\ffmpeg\\bin\\ffmpeg.exe",
         "-i", temp_video_path,
         "-vf", f"select='gt(scene,{threshold})'",
         "-vsync", "vfr",
@@ -85,13 +153,9 @@ def extract_keyframes_from_buffer(video_buffer, output_directory="output/keyfram
             f"Key frames extracted successfully and saved in '{output_directory}'")
     except subprocess.CalledProcessError as e:
         print(f"Error extracting key frames: {e}")
-    finally:
-        # Clean up the temporary video file
-        if should_delete_vid:
-            os.remove(temp_video_path)
 
 
-def load_images_from_folder(folder):
+def load_images_from_folder(folder="output/keyframes"):
     """
     Loads all images from a given folder.
 
@@ -121,7 +185,7 @@ def convert_frames_to_pil(frames):
     return pil_images
 
 
-def create_image_grid_dynamic(frames, output_path="grid.png"):
+def create_image_grid_dynamic(frames, output_path="output/keyframe_grid.png"):
     """
     Creates a grid of images from the extracted frames with no white space.
 
@@ -156,8 +220,21 @@ def create_image_grid_dynamic(frames, output_path="grid.png"):
     grid_image.save(output_path)
     print(f"Image grid saved to '{output_path}'")
 
+    # Reduce the resolution by half
+    new_width = grid_image.width // 2
+    new_height = grid_image.height // 2
+    resized_grid_image = grid_image.resize(
+        (new_width, new_height), Image.BICUBIC)
 
-def create_image_row_dynamic(frames, output_path="row.png"):
+    # Optionally save the resized image (if needed)
+    resized_output_path = output_path.replace(".png", "_resized.png")
+    resized_grid_image.save(resized_output_path)
+    print(f"Resized image row saved to '{resized_output_path}'")
+
+    return resized_grid_image
+
+
+def create_image_row_dynamic(frames, output_path="output/keyframe_row.png"):
     """
     Creates a row of images from the extracted frames with no white space.
 
@@ -188,20 +265,39 @@ def create_image_row_dynamic(frames, output_path="row.png"):
     row_image.save(output_path)
     print(f"Image row saved to '{output_path}'")
 
+    # Reduce the resolution by half
+    new_width = row_image.width // 2
+    new_height = row_image.height // 2
+    resized_row_image = row_image.resize(
+        (new_width, new_height), Image.BICUBIC)
 
-def extract_audio_from_buffer(video_buffer, audio_output_path="audio.wav"):
+    # Optionally save the resized image (if needed)
+    resized_output_path = output_path.replace(".png", "_resized.png")
+    resized_row_image.save(resized_output_path)
+    print(f"Resized image row saved to '{resized_output_path}'")
+
+    return resized_row_image
+
+
+def extract_audio_from_buffer(video_path="output/temp_video.mp4", audio_output_path="output/audio.wav"):
     """
     Extracts audio from a video buffer.
     """
+    if not os.path.exists(video_path):
+        return ""
+
     print("Extracting audio from video buffer...")
-    clip = mp.VideoFileClip(video_buffer)
+    clip = mp.VideoFileClip(video_path)
     clip.audio.write_audiofile(audio_output_path, codec='pcm_s16le')
 
 
-def transcribe_audio(audio_path):
+def transcribe_audio(audio_path="output/audio.wav"):
     """
     Transcribes audio using OpenAI's Whisper model.
     """
+    if not os.path.exists(audio_path):
+        return ""
+
     print(f"Transcribing audio from {audio_path}...")
     model = whisper.load_model("base")
     result = model.transcribe(audio_path)
@@ -242,11 +338,29 @@ def process_video_buffer(video_buffer: io.BytesIO):
     # Extract keyframes from the video buffer
     ensure_minimum_keyframes(video_buffer)
 
+    extract_audio_from_buffer()
+    transcript = transcribe_audio()
+
     # Load the extracted keyframes
-    keyframes = load_images_from_folder("output/keyframes")
+    keyframes = load_images_from_folder()
 
-    create_image_grid_dynamic(keyframes, "output/keyframe_grid.png")
+    # TODO: need to find out how to compress to lower res
+    grid_img = create_image_grid_dynamic(keyframes)
 
-    create_image_row_dynamic(keyframes, "output/keyframe_row.png")
+    row_img = create_image_row_dynamic(keyframes)
 
-    return True
+    keywords = []
+
+    # Inferencing
+    print("Starting inference on row")
+    keywords.extend(phi3Vision.get_product_keywords(
+        row_img, transcript, False))
+
+    print("Starting inference on grid")
+    keywords.extend(phi3Vision.get_product_keywords(grid_img, "", True))
+
+    # clean up
+    remove_files_and_directories(
+        "output", "output/temp_video.mp4", "output/audio.wav")
+
+    return keywords

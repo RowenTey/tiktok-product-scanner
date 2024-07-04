@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from routers import api_router
+from core.transformer import phi3Vision
 from starlette.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -10,6 +11,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def startup_event():
+    phi3Vision.load_model()
 
 
 @app.get("/")
@@ -23,6 +29,6 @@ if __name__ == "__main__":
     uvicorn.run(
         app="main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8001,
         reload=True,
     )
