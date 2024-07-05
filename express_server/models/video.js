@@ -6,6 +6,7 @@ const videoSchema = new mongoose.Schema({
 	size: { type: Number, required: true },
 	contentType: { type: String, required: true },
 	uploadDate: { type: Date, required: true },
+	presignedUrl: { type: String, required: false },
 });
 
 const Video = mongoose.model("Video", videoSchema);
