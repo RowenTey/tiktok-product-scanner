@@ -15,6 +15,13 @@ services:
   #   ports:
   #     - "5173:5173"
 
+  # fastapi_server:
+  #   build: ./fastapi_server
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./fastapi_server:/app
+
   mongodb:
     image: mongo:latest
     ports:
@@ -34,12 +41,33 @@ services:
     volumes:
       - minio_data:/data
 
-  fastapi_server:
-    build: ./fastapi_server
+  kafka:
+    image: confluentinc/cp-kafka:latest
     ports:
-      - "8000:8000"
-    volumes:
-      - ./fastapi_server:/app
+      - "9092:9092"
+    restart: always
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Bob is internal docker network listener
+      # Fred is external listener
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_BOB://kafka:29092,LISTENER_FRED://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_BOB:PLAINTEXT,LISTENER_FRED:PLAINTEXT
+      KAFKA_LISTENERS: LISTENER_BOB://kafka:29092,LISTENER_FRED://kafka:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_BOB
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
+      # KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
 
 volumes:
   mongodb_data:
