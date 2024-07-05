@@ -1,0 +1,9 @@
+.products-list-container {
+    transform: translate(0, 150rem);
+    transition: all 0.3s ease-in-out;
+}
+
+.products-list-container.active {
+    transform: translate(0, 0);
+    transition: all 0.3s ease-in-out;
+}
