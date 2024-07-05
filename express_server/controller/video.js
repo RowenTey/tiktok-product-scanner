@@ -9,7 +9,8 @@ export const uploadVideo = async (req, res) => {
 		const uploadedRes = await minioClient.putObject(
 			"videos",
 			fileName,
-			req.file.buffer
+			req.file.buffer,
+			req.file.size
 		);
 		console.log("Uploaded to MinIO:", uploadedRes);
 
