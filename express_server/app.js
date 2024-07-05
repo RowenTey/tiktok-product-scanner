@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import router from "./routes/index.js";
 import mongoose from "mongoose";
+import { connectProducer, runConsumer } from "./config/kafka.js";
 
 const app = express();
 app.use(cors());
@@ -16,12 +17,29 @@ mongoose
 		console.log("Error: " + err);
 	});
 
+// connect to kafka
+connectProducer()
+	.then(() => {
+		console.log("Kafka producer connected");
+	})
+	.catch((err) => {
+		console.error("Error connecting Kafka producer:", err);
+	});
+
 // routes
-app.use("/v1", router);
 app.get("/", (req, res) => {
 	res.send("Hello World");
 });
+app.use("/", router);
 
-app.listen(5000, () => {
+app.listen(5000, async () => {
 	console.log("Listening at port 5000");
+
+	// run kafka consumer as background process
+	try {
+		await runConsumer("process-video-complete");
+		console.log("Kafka consumer is running");
+	} catch (error) {
+		console.error("Error running consumer:", error);
+	}
 });

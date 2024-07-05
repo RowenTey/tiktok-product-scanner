@@ -1,14 +1,13 @@
 import mongoose from "mongoose";
 
 const videoSchema = new mongoose.Schema({
-	title: String,
-	fileName: String,
-	size: Number,
-	contentType: String,
-	uploadDate: Date,
+	title: { type: String, required: true },
+	fileName: { type: String, required: true },
+	size: { type: Number, required: true },
+	contentType: { type: String, required: true },
+	uploadDate: { type: Date, required: true },
 });
 
-// Create a model from the schema
 const Video = mongoose.model("Video", videoSchema);
 
 export default Video;
