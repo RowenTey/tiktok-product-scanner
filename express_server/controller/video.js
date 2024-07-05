@@ -57,7 +57,6 @@ export const uploadVideo = async (req, res) => {
 			24 * 60 * 60,
 		);
 		console.log("Uploaded to MinIO:", uploadedRes);
-		console.log("Presigned URL:", presignedUrl);
 
 		// Save metadata to MongoDB using Mongoose
 		const video = new Video({

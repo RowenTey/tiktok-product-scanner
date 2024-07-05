@@ -14,6 +14,8 @@ const dummyVideos = [
 	{ id: 2, src: MacbookVid, title: "MacBook" },
 ];
 
+const limit = 5;
+
 const SwipeableVideoList = () => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [playing, setPlaying] = useState(true);
@@ -53,7 +55,7 @@ const SwipeableVideoList = () => {
 	useEffect(() => {
 		const fetchVideos = async () => {
 			try {
-				const response = await getVideos();
+				const response = await getVideos(1, limit);
 				const videosResults = [];
 				response.data.videos.forEach(async (video) => {
 					videosResults.push({
