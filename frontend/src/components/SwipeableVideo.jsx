@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import ReactPlayer from "react-player";
 import JapanVid from "../assets/japan.mp4";
 import MacbookVid from "../assets/macbook.mp4";
+import { getVideos } from "../api";
 
-const videos = [
-	{ id: 1, src: JapanVid, title: "Japan" },
+const dummyVideos = [
+	{
+		id: 1,
+		src: JapanVid,
+		title: "Japan",
+	},
 	{ id: 2, src: MacbookVid, title: "MacBook" },
 ];
 
@@ -13,6 +18,7 @@ const SwipeableVideoList = () => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [playing, setPlaying] = useState(true);
 	const [played, setPlayed] = useState(0);
+	const [videos, setVideos] = useState(dummyVideos);
 
 	const handleSwipedUp = () => {
 		setCurrentIndex((prevIndex) => (prevIndex + 1) % videos.length);
@@ -22,7 +28,7 @@ const SwipeableVideoList = () => {
 
 	const handleSwipedDown = () => {
 		setCurrentIndex(
-			(prevIndex) => (prevIndex - 1 + videos.length) % videos.length
+			(prevIndex) => (prevIndex - 1 + videos.length) % videos.length,
 		);
 		setPlaying(true);
 		setPlayed(0);
@@ -43,6 +49,27 @@ const SwipeableVideoList = () => {
 		preventDefaultTouchmoveEvent: true,
 		trackMouse: true,
 	});
+
+	useEffect(() => {
+		const fetchVideos = async () => {
+			try {
+				const response = await getVideos();
+				const videosResults = [];
+				response.data.videos.forEach(async (video) => {
+					videosResults.push({
+						id: video._id,
+						src: video.presignedUrl,
+						title: video.title,
+					});
+				});
+				setVideos(videosResults);
+				console.log("SUCCESSFUL GET videos");
+			} catch (error) {
+				console.error("Error fetching videos:", error);
+			}
+		};
+		fetchVideos();
+	}, []);
 
 	return (
 		<div {...handlers} className="h-full w-full">
@@ -66,7 +93,9 @@ const SwipeableVideoList = () => {
 							/>
 						)}
 						<div className="absolute bottom-10 text-white">
-							<h1 className="text-2xl font-bold">{video.title}</h1>
+							<h1 className="text-2xl font-bold">
+								{video.title}
+							</h1>
 						</div>
 						<div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
 							<div
