@@ -17,27 +17,27 @@ export const AuthContextProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState({ status: false, text: "" });
   const [user, setUser] = useState({
-    name: "TeamCook",
-    email: "test@gmail.com",
+    name: "",
+    email: "",
   });
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
-    console.log(token);
     // Set the default Authorization header for all axios requests
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    // Make subsequent requests using Axios
-    api
-      .get("/user")
-      .then((response) => {
+    if(token != null){
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // Make subsequent requests using Axios
+      console.log(token)
+      api.get("/user").then((response) => {
         // Handle response
-        setUser(response.data);
+        console.log(response.data[0])
+        setUser(response.data[0]);
         setIsLoggedIn(true);
-      })
-      .catch((error) => {
+      }).catch((error) => {
         // Handle error
         console.error("Request failed:", error);
       });
+    }
   }, []);
 
   const login = async (user) => {
