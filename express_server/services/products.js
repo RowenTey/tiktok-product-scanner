@@ -61,7 +61,7 @@ export const saveProducts = async (products) => {
                 name: product.name,
                 price: product.price,
                 videoId: product.videoId,
-                image: product.image,
+                imageSrc: product.image,
                 ratings: product.ratings,
                 itemsSold: product.itemsSold,
             });
@@ -70,7 +70,6 @@ export const saveProducts = async (products) => {
         return true;
     } catch (error) {
         console.log("Error occured while saving product: ", error);
-        // throw error;
         return false;
     }
 }

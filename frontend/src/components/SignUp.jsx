@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth-context";
+
 const SignUp = () => {
   const navigate = useNavigate();
   const { signup } = useAuth();
+  
   const handleSubmit = (e) => {
     const user = {
       firstName: e.target[0].value,
@@ -14,6 +16,7 @@ const SignUp = () => {
     signup(user);
     e.preventDefault();
   };
+  
   return (
     <div className="h-full w-full flex flex-col items-center justify-center bg-gray-100 p-4">
       <h1 className="text-2xl font-bold mb-4 text-blue-600">New User</h1>
@@ -51,6 +54,7 @@ const SignUp = () => {
           Sign Up
         </button>
       </form>
+      
       <a
         className="underline py-4 text-sm hover:cursor-pointer"
         onClick={() => {

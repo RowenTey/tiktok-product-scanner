@@ -1,36 +1,8 @@
 import Video from "../models/video.js";
-import minioClient from "../config/minio.js";
+import { minioClient, createBucketIfNotExists } from "../config/minio.js";
 import { sendMessage } from "../config/kafka.js";
 
 const BUCKET_NAME = "videos";
-
-const createBucketIfNotExists = async (bucketName) => {
-	const exists = await minioClient.bucketExists(bucketName);
-	if (exists) {
-		console.log(`Bucket '${bucketName}' already exists.`);
-		return;
-	}
-	
-	await minioClient.makeBucket(bucketName);
-	console.log(`Bucket '${bucketName}' created successfully.`);
-
-	// Define bucket policy
-	const policy = {
-		Version: "2012-10-17",
-		Statement: [
-			{
-				Effect: "Allow",
-				Principal: "*",
-				Action: ["s3:GetObject"],
-				Resource: [`arn:aws:s3:::${bucketName}/*`],
-			},
-		],
-	};
-
-	// Set bucket policy
-	await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
-	console.log(`Public access policy set for bucket '${bucketName}'.`);
-};
 
 export const uploadVideo = async (req, res) => {
 	try {
@@ -94,7 +66,7 @@ export const getVideo = async (req, res) => {
 		// Calculate total pages
 		const totalPages = Math.ceil(total / limit);
 		console.log("Getting videos", videos);
-		
+
 		res.status(200).json({
 			page,
 			limit,

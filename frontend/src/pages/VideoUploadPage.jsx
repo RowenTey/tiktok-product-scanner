@@ -50,7 +50,7 @@ const VideoUploadPage = () => {
 	};
 
 	return (
-		<div className="h-full w-full flex flex-col items-center justify-center bg-gray-100 p-4">
+		<div className="h-full w-full flex flex-col items-center justify-center bg-stone-800 p-4">
 			<h1 className="text-2xl font-bold mb-4 text-blue-600">Upload a Video</h1>
 			<form onSubmit={handleSubmit} className="flex flex-col items-center">
 				<input

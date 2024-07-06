@@ -3,6 +3,7 @@ import { useAuth } from "../store/auth-context";
 const SignIn = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const user = {
@@ -11,6 +12,7 @@ const SignIn = () => {
     };
     login(user);
   };
+  
   return (
     <div className="h-full w-full flex flex-col items-center justify-center bg-gray-100 p-4">
       <h1 className="text-2xl font-bold mb-4 text-blue-600">Login</h1>

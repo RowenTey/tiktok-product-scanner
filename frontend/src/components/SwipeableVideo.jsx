@@ -2,9 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import ReactPlayer from "react-player";
 import JapanVid from "../assets/japan.mp4";
 import MacbookVid from "../assets/macbook.mp4";
-import { getVideos } from "../api";
+import { getProducts, getVideos } from "../api";
 import ProductsList from "./ProductsList";
-import "./style.css";
 
 const dummyVideos = [
     {
@@ -19,9 +18,10 @@ const limit = 5;
 
 const SwipeableVideoList = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [playing, setPlaying] = useState(true);
+    const [playing, setPlaying] = useState(false);
     const [played, setPlayed] = useState(0);
     const [videos, setVideos] = useState(dummyVideos);
+    const [products, setProducts] = useState([]);
     const [showProducts, setShowProducts] = useState(false);
     const containerRef = useRef(null);
 
@@ -108,12 +108,7 @@ const SwipeableVideoList = () => {
             return;
         }
 
-        if (showProducts) {
-            setShowProducts(false);
-            togglePlay();
-        } else {
-            togglePlay();
-        }
+        togglePlay();
     };
 
     const handleProgress = (state) => {
@@ -132,14 +127,41 @@ const SwipeableVideoList = () => {
                         title: video.title,
                     });
                 });
+                
+                if (videosResults.length === 0) {
+                    console.log("No videos found");
+                    return;
+                }
+                
                 setVideos(videosResults);
+                console.log("Videos fetched: ",  videosResults.length);
                 console.log("SUCCESSFUL GET videos");
             } catch (error) {
                 console.error("Error fetching videos:", error);
             }
         };
-        fetchVideos();
+        
+        fetchVideos().then(setPlaying(true));
     }, []);
+    
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                console.log("video Id: ", videos[currentIndex].id);
+                const resp = await getProducts(videos[currentIndex].id);
+                console.log(resp);
+                setProducts(resp.data);
+                console.log("Products fetched: ", resp.data.length);
+                console.log("SUCCESSFUL GET products");
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        }
+        
+        if (videos.length > 0) {
+            fetchProducts();
+        }
+    }, [currentIndex, videos]);
 
     return (
         <div
@@ -169,26 +191,28 @@ const SwipeableVideoList = () => {
                             </div>
                         )}
                         <div className="flex flex-col absolute bottom-2.5 left-2 gap-y-3">
-                            <button
-                                className="bg-stone-900 p-1 flex gap-x-2 items-center"
-                                onClick={() => setShowProducts(true)}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="size-4"
+                            {products.length > 0 && (
+                                <button
+                                    className="bg-stone-900 p-2 flex gap-x-2 items-center rounded-xl"
+                                    onClick={() => {setShowProducts(true)}}
                                 >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                                    />
-                                </svg>
-                                <span className="text-xs">Products</span>
-                            </button>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth="1.5"
+                                        stroke="currentColor"
+                                        className="size-4"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                        />
+                                    </svg>
+                                    <span className="text-xs">Products</span>
+                                </button>
+                            )}
                             <div className="flex flex-col gap-y-1">
                                 <span className="font-bold text-base">
                                     Username
@@ -211,38 +235,7 @@ const SwipeableVideoList = () => {
                             }`}
                         >
                             <ProductsList
-                                products={[
-                                    {
-                                        name: "Product 1",
-                                        price: "$100",
-                                        rating: 4,
-                                        itemsSold: 100,
-                                    },
-                                    {
-                                        name: "Product 2",
-                                        price: "$200",
-                                        rating: 5,
-                                        itemsSold: 200,
-                                    },
-                                    {
-                                        name: "Product 3",
-                                        price: "$300",
-                                        rating: 3,
-                                        itemsSold: 300,
-                                    },
-                                    {
-                                        name: "Product 3",
-                                        price: "$300",
-                                        rating: 3,
-                                        itemsSold: 300,
-                                    },
-                                    {
-                                        name: "Product 3",
-                                        price: "$300",
-                                        rating: 3,
-                                        itemsSold: 300,
-                                    },
-                                ]}
+                                products={products}
                                 onHideProductsList={() =>
                                     setShowProducts(false)
                                 }

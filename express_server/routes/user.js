@@ -1,6 +1,7 @@
 import express from "express";
 import { signin, signup } from "../controller/user.js";
 import User from "../models/user.js";
+
 const userRouter = express.Router();
 
 userRouter.get("/", async (req, res) => {

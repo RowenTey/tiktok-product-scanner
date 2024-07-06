@@ -14,6 +14,8 @@ export const uploadVideo = (formData) =>
 export const getVideos = (page = 1, limit = 2) =>
   api.get(`/videos?page=${page}&limit=${limit}`);
 
+export const getProducts = (videoId) => api.get(`/products?videoId=${videoId}`);
+
 // api.interceptors.request.use((req) => {
 // 	const user = JSON.parse(localStorage.getItem("profile"));
 // 	const token = user?.token;

@@ -1,9 +1,10 @@
+/* eslint-disable react/prop-types */
 import Product from "./Product";
 
 const ProductsList = ({ products, onHideProductsList }) => {
     return (
         <>
-            <div className="flex flex-col h-[40rem] bg-[#efefef] w-full p-2.5 gap-y-3">
+            <div className="flex flex-col h-[40rem] bg-[#efefef] w-full px-2.5 pb-2.5 pt-9 gap-y-3">
                 <div className="flex items-center h-[2rem]">
                     <span className="font-bold text-[#e0486c]">
                         Relevant Products
@@ -26,13 +27,14 @@ const ProductsList = ({ products, onHideProductsList }) => {
                         </svg>
                     </button>
                 </div>
-                <div className="flex flex-wrap box-border h-[38rem] overflow-y-auto">
+                <div className="flex flex-wrap content-start gap-y-3 box-border h-[38rem] overflow-y-auto">
                     {products.map((product, index) => {
                         return (
-                            <div className="w-1/2" key={index}>
+                            <div className="w-1/2 h-fit" key={index}>
                                 <Product
                                     name={product.name}
                                     price={product.price}
+                                    image={product.image}
                                     rating={product.rating}
                                     itemsSold={product.itemsSold}
                                 />
