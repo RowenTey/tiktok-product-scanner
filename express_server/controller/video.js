@@ -5,42 +5,39 @@ import { sendMessage } from "../config/kafka.js";
 const BUCKET_NAME = "videos";
 
 const createBucketIfNotExists = async (bucketName) => {
-	try {
-		const exists = await minioClient.bucketExists(bucketName);
-		if (!exists) {
-			await minioClient.makeBucket(bucketName);
-			console.log(`Bucket '${bucketName}' created successfully.`);
-
-			// Define bucket policy
-			const policy = {
-				Version: "2012-10-17",
-				Statement: [
-					{
-						Effect: "Allow",
-						Principal: "*",
-						Action: ["s3:GetObject"],
-						Resource: [`arn:aws:s3:::${bucketName}/*`],
-					},
-				],
-			};
-
-			// Set bucket policy
-			await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
-			console.log(`Public access policy set for bucket '${bucketName}'.`);
-		} else {
-			console.log(`Bucket '${bucketName}' already exists.`);
-		}
-	} catch (error) {
-		console.error("Error checking or creating bucket:", error);
-		throw error;
+	const exists = await minioClient.bucketExists(bucketName);
+	if (exists) {
+		console.log(`Bucket '${bucketName}' already exists.`);
+		return;
 	}
+	
+	await minioClient.makeBucket(bucketName);
+	console.log(`Bucket '${bucketName}' created successfully.`);
+
+	// Define bucket policy
+	const policy = {
+		Version: "2012-10-17",
+		Statement: [
+			{
+				Effect: "Allow",
+				Principal: "*",
+				Action: ["s3:GetObject"],
+				Resource: [`arn:aws:s3:::${bucketName}/*`],
+			},
+		],
+	};
+
+	// Set bucket policy
+	await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
+	console.log(`Public access policy set for bucket '${bucketName}'.`);
 };
 
 export const uploadVideo = async (req, res) => {
 	try {
-		console.log("uploading video");
+		console.log("Uploading video");
 		// Save video to MinIO
 		await createBucketIfNotExists(BUCKET_NAME);
+		console.log(req.file)
 		const fileName = `${Date.now()}_${req.file.originalname}`;
 		const uploadedRes = await minioClient.putObject(
 			BUCKET_NAME,
@@ -68,6 +65,7 @@ export const uploadVideo = async (req, res) => {
 		await video.save();
 
 		const kafkaData = {
+			id: video._id,
 			bucket: BUCKET_NAME,
 			fileName: fileName,
 		};
@@ -95,7 +93,8 @@ export const getVideo = async (req, res) => {
 
 		// Calculate total pages
 		const totalPages = Math.ceil(total / limit);
-		console.log("getting vidoe", videos);
+		console.log("Getting videos", videos);
+		
 		res.status(200).json({
 			page,
 			limit,
