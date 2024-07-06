@@ -23,8 +23,9 @@ export const AuthContextProvider = (props) => {
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
+    console.log(token);
     // Set the default Authorization header for all axios requests
-    api.defaults.headers["token"] = token;
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     // Make subsequent requests using Axios
     api
       .get("/user")
@@ -46,7 +47,8 @@ export const AuthContextProvider = (props) => {
       if (response.status == 200) {
         setIsLoggedIn(true);
         console.log(response.data);
-        setUser(response.data.user);
+        setUser(response.data.result);
+
         setError({ status: false, text: "" });
         sessionStorage.setItem("token", response.data.token);
       }
@@ -82,7 +84,7 @@ export const AuthContextProvider = (props) => {
       if (response.status == 200) {
         setIsLoggedIn(true);
         console.log(response.data);
-        setUser(response.data.user);
+        setUser(response.data.result);
         setError({ status: false, text: "" });
         sessionStorage.setItem("token", response.data.token);
       }
