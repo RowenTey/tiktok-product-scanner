@@ -8,7 +8,6 @@ const auth = async (req, res, next) => {
 		}
 
 		let decodedData;
-
 		decodedData = jwt.decode(token);
 		console.log("decodedData ", decodedData);
 		req.userId = decodedData?.sub;

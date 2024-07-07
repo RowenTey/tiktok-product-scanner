@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     # print("Cleaning up...")
     # phi3Vision.cleanup()
     
-    # kafkaClient.close_consumer()
+    kafkaClient.close_consumer()
     kafkaClient.close_producer()
 
 
@@ -54,6 +54,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8001,
         log_level=logging.WARNING,
-        reload=False,
+        reload=True,
         reload_excludes="C:\\Users\\leeja\\Documents\\VSCode\\fastapi_server\\output\\"
     )
