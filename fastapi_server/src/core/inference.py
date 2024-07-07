@@ -31,9 +31,9 @@ def get_product_keywords(image, transcript):
     phi3Vision.cleanup()
 
     prompt_1_2 = (
-        "You are a online shopping assistant tasked with helping a user find relevant products based on a given context.\n"
-        "You are provided with 30 descriptions of video frames extracted from a Tiktok video.\n"
-        "Try to describe what the video is about.\n"
+        "You are a expert shopping assistant tasked with providing product recommendations.\n"
+        "You are provided with 30 descriptions of video frames extracted from a Tiktok video\n"
+        "Try to describe what the video is about, and based on that, suggest 3 products relevant to the context of the video.\n"
         "Based on the information, describe products relevant to the context of the video.\n"
         "Context:\n"
     )
@@ -48,7 +48,7 @@ def get_product_keywords(image, transcript):
 
     # Prepare prompt for product recommendation
     prompt_2 = (
-        "You are a online shopping search assistant\n"
+        "You are a online shopping assistant.\n"
         "Provide 3 product search keywords for online shopping platforms from this analysis:\n"
         "You MUST ONLY respond with a JSON array in this exact format: [\"keyword1\", \"keyword2\", \"keyword3\"].\n"
         "Do not include any other output in your response."
