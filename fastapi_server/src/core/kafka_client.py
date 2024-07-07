@@ -46,6 +46,7 @@ class KafkaClient:
             raise Exception("Consumer not started. Call start_consumer() first.")
         
         for message in self.consumer:
+            print("offset: ", message.offset)
             on_message(message.value)
 
     def close_consumer(self):

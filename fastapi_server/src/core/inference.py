@@ -33,17 +33,18 @@ def get_product_keywords(image, transcript):
     phi3Vision.cleanup()
 
     prompt_1_2 = (
-        "You are a expert shopping assistant tasked with providing product recommendations.\n"
-        "You are provided with 30 descriptions of video frames extracted from a Tiktok video\n"
-        "Try to describe what the video is about, and based on that, suggest 3 products relevant to the context of the video.\n"
+        "You are an expert shopping assistant tasked with providing product recommendations.\n"
+        "You are provided with 30 descriptions of video frames extracted from a Tiktok video.\n"
+        "In 100 words, describe what the video is about, and based on that, suggest 3 products relevant to the context of the video.\n"
         "Based on the information, describe products relevant to the context of the video.\n"
         "Context:\n"
+        f"{description}"
     )
     
     if transcript:
-        prompt_1_2 += f" You may also use the audio transcript for further context: {transcript}"
+        prompt_1_2 += f"\nYou may also use the audio transcript for further context: {transcript}"
     
-    intermediate_resp = ollama.generate(prompt=prompt_1_2 + description, temperature=0.4)
+    intermediate_resp = ollama.generate(prompt=prompt_1_2, temperature=0.4)
 
     print("\n-----\n")
     print(intermediate_resp)
