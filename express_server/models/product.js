@@ -5,6 +5,7 @@ const productSchema = new mongoose.Schema({
 	price: { type: Number, required: true },
 	videoId: { type: String, required: true },
 	imageSrc: { type: String, required: false },
+	productUrl: { type: String, required: true },
 	rating: { type: Number, required: false },
 	itemsSold: { type: String, required: true },
 });

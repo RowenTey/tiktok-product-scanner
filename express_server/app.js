@@ -4,7 +4,6 @@ import router from "./routes/index.js";
 import mongoose from "mongoose";
 import { onKeywordsExtracted } from "./services/video.js";
 import { connectProducer, runConsumer } from "./config/kafka.js";
-import userRouter from "./routes/user.js";
 
 const app = express();
 app.use(cors());
@@ -14,7 +13,6 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 app.use("/", router);
-app.use("/user", userRouter);
 
 const initialize = async () => {
   try {

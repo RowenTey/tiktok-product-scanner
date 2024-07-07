@@ -1,18 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ReactPlayer from "react-player";
-import JapanVid from "../assets/japan.mp4";
-import MacbookVid from "../assets/macbook.mp4";
 import { getProducts, getVideos } from "../api";
 import ProductsList from "./ProductsList";
-
-// const dummyVideos = [
-//     {
-//         id: 1,
-//         src: JapanVid,
-//         title: "Japan",
-//     },
-//     { id: 2, src: MacbookVid, title: "MacBook" },
-// ];
 
 const limit = 2;
 
@@ -108,6 +97,8 @@ const SwipeableVideoList = () => {
         // If click is from the products list, do nothing
         if (e.target.closest(".products-list-container")) {
             return;
+        } else if (e.target.closest(".bg-stone-900")) {
+            return;
         }
 
         togglePlay();
@@ -120,8 +111,10 @@ const SwipeableVideoList = () => {
     const fetchVideos = async (page) => {
         try {
             const response = await getVideos(page, limit);
+            console.log(response.data.videos)
             const newVideos = response.data.videos.map(video => ({
                 id: video._id,
+                username: video.username,
                 src: video.presignedUrl,
                 title: video.title,
             }));
@@ -183,6 +176,7 @@ const SwipeableVideoList = () => {
         }
         
         if (videos.length > 0) {
+            setProducts([]);
             fetchProducts();
         }
     }, [currentIndex, videos]);
@@ -193,7 +187,7 @@ const SwipeableVideoList = () => {
             onClick={handleVideoClick}
             className="h-full w-full"
         >
-            <div className="relative h-full w-full flex flex-col items-center justify-center bg-black">
+            <div className="relative h-full w-full flex flex-col items-center justify-center bg-gray-900">
                 {videos.map((video, index) => (
                     <div
                         key={index}
@@ -239,7 +233,7 @@ const SwipeableVideoList = () => {
                             )}
                             <div className="flex flex-col gap-y-1">
                                 <span className="font-bold text-base">
-                                    Username
+                                    {video.username || "Anonymous"}
                                 </span>
                                 <span>{video.title}</span>
                             </div>

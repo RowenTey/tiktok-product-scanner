@@ -2,8 +2,9 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import VideoUploadPage from "./pages/VideoUploadPage";
 import UserPage from "./pages/UserPage";
-import SignUp from "./components/SignUp";
 import TabLayout from "./layouts/TabLayout";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
 
 const App = () => {
   return (
@@ -14,9 +15,10 @@ const App = () => {
               <Route element={<TabLayout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/upload" element={<VideoUploadPage />} />
+                <Route path="/profile" element={<UserPage />} />
               </Route>
-              <Route path="/profile" element={<UserPage />} />
-              <Route path="/signup" element={<SignUp />} />
+              <Route path="/login" element={<SignInPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
             </Routes>
         </div>
       </div>

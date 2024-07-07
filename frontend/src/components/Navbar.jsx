@@ -13,7 +13,7 @@ import NavIcon from "./NavIcon";
 
 const Navbar = () => {
     return (
-        <nav className="h-[7.5%] p-2 bg-black flex items-center justify-evenly z-50">
+        <nav className="h-[7.5%] p-2 bg-stone-900 flex items-center justify-evenly z-50">
             <Link to="/">
                 <NavIcon
                     to="/"
@@ -26,6 +26,13 @@ const Navbar = () => {
                     to="/upload"
                     SolidIcon={VideoCameraSolid}
                     OutlineIcon={VideoCameraOutline}
+                />
+            </Link>
+            <Link to="/profile">
+                <NavIcon
+                    to="/profile"
+                    SolidIcon={UserSolid}
+                    OutlineIcon={UserOutline}
                 />
             </Link>
         </nav>

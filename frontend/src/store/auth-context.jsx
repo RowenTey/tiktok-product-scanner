@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useContext, useState, useEffect } from "react";
 import { api } from "../api";
 
@@ -13,7 +14,7 @@ export const useAuth = () => {
   return useContext(AuthContext);
 };
 
-export const AuthContextProvider = (props) => {
+export const AuthContextProvider = ({children}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState({ status: false, text: "" });
   const [user, setUser] = useState({
@@ -23,35 +24,44 @@ export const AuthContextProvider = (props) => {
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
-    // Set the default Authorization header for all axios requests
-    if(token != null){
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // Make subsequent requests using Axios
-      console.log(token)
-      api.get("/user").then((response) => {
-        // Handle response
-        console.log(response.data[0])
-        setUser(response.data[0]);
-        setIsLoggedIn(true);
-      }).catch((error) => {
-        // Handle error
-        console.error("Request failed:", error);
-      });
+    if (token == null) {
+      return;
     }
+    
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // Make subsequent requests using Axios
+    console.log("Token from session storage: ", token)
+    
+    api.get("/user").then((response) => {
+      // Handle response
+      console.log(response.data[0])
+      setUser(response.data[0]);
+      setIsLoggedIn(true);
+    }).catch((error) => {
+      // Handle error
+      console.error("Request failed:", error);
+    });
   }, []);
 
   const login = async (user) => {
     try {
       const response = await api.post("/user/signin", user);
 
-      if (response.status == 200) {
-        setIsLoggedIn(true);
+      if (response.status != 200) {
         console.log(response.data);
-        setUser(response.data.result);
-
-        setError({ status: false, text: "" });
-        sessionStorage.setItem("token", response.data.token);
+        setError({ status: true, text: "Error logging in" });
+        return false;
       }
+      
+      setIsLoggedIn(true);
+      console.log(response.data);
+      setUser(response.data.result);
+
+      setError({ status: false, text: "" });
+      sessionStorage.setItem("token", response.data.token);
+      
+      api.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+      return true;
     } catch (err) {
       switch (err.response.status) {
         case 400:
@@ -75,6 +85,7 @@ export const AuthContextProvider = (props) => {
           console.log(err.message);
           break;
       }
+      return false;
     }
   };
 
@@ -82,12 +93,17 @@ export const AuthContextProvider = (props) => {
     try {
       const response = await api.post("/user/signup", user);
       if (response.status == 200) {
-        setIsLoggedIn(true);
         console.log(response.data);
-        setUser(response.data.result);
-        setError({ status: false, text: "" });
-        sessionStorage.setItem("token", response.data.token);
+        setError({ status: true, text: "Error signing up" });
+        return false;
       }
+      
+      setIsLoggedIn(true);
+      console.log(response.data);
+      setUser(response.data.result);
+      setError({ status: false, text: "" });
+      sessionStorage.setItem("token", response.data.token);
+      return true;
     } catch (err) {
       switch (err.response.status) {
         case 400:
@@ -101,6 +117,7 @@ export const AuthContextProvider = (props) => {
           console.log(err.message);
           break;
       }
+      return false;
     }
   };
 
@@ -122,7 +139,7 @@ export const AuthContextProvider = (props) => {
         error: error,
       }}
     >
-      {props.children}
+      {children}
     </AuthContext.Provider>
   );
 };

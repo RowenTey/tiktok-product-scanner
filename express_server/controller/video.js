@@ -1,16 +1,18 @@
 import Video from "../models/video.js";
 import { minioClient, createBucketIfNotExists } from "../config/minio.js";
 import { sendMessage } from "../config/kafka.js";
+import User from "../models/user.js";
 
 const BUCKET_NAME = "videos";
 
 export const uploadVideo = async (req, res) => {
 	try {
 		console.log("Uploading video");
-		// Save video to MinIO
+
+		// Upload video to MinIO
 		await createBucketIfNotExists(BUCKET_NAME);
-		console.log(req.file)
-		const fileName = `${Date.now()}_${req.file.originalname}`;
+		const userId = req.userId;
+		const fileName = `${userId}/${req.file.originalname}`;
 		const uploadedRes = await minioClient.putObject(
 			BUCKET_NAME,
 			fileName,
@@ -27,6 +29,7 @@ export const uploadVideo = async (req, res) => {
 
 		// Save metadata to MongoDB using Mongoose
 		const video = new Video({
+			userId,
 			title: req.body.title,
 			fileName: fileName,
 			size: req.file.size,
@@ -60,12 +63,19 @@ export const getVideo = async (req, res) => {
 		// Fetch videos metadata from MongoDB with pagination
 		const videos = await Video.find().skip(skip).limit(limit);
 
+		// find each user of the video
+		for (let i = 0; i < videos.length; i++) {
+			const userId = videos[i].userId;
+			const user = await User.findById(userId);
+			videos[i] = { ...videos[i]._doc, username: user.name };
+			console.log(videos[i]);
+		}
+
 		// Get total count of videos
 		const total = await Video.countDocuments();
 
 		// Calculate total pages
 		const totalPages = Math.ceil(total / limit);
-		console.log("Getting videos", videos);
 
 		res.status(200).json({
 			page,
