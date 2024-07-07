@@ -16,7 +16,9 @@ def get_product_keywords(image, transcript):
     # check if image is PIL image or list of PIL images
     if not isinstance(image, list):
         image = [image]
-    
+        
+    # cleanup ollama just in case
+    ollama.cleanup()
     phi3Vision.load_model()
     print("Loaded model!")
         
