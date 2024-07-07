@@ -28,13 +28,6 @@ const Navbar = () => {
                     OutlineIcon={VideoCameraOutline}
                 />
             </Link>
-            <Link to="/profile">
-                <NavIcon
-                    to="/profile"
-                    SolidIcon={UserSolid}
-                    OutlineIcon={UserOutline}
-                />
-            </Link>
         </nav>
     );
 };
