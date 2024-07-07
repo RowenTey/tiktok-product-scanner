@@ -34,7 +34,7 @@ class KafkaClient:
             topic,
             bootstrap_servers=self.bootstrap_servers,
             enable_auto_commit=True,
-            auto_offset_reset='latest',
+            auto_offset_reset='earliest',
             group_id=self.group_id,
             value_deserializer=lambda x: json.loads(x.decode('utf-8'))
         )
@@ -49,11 +49,12 @@ class KafkaClient:
         for message in self.consumer:
             print("offset: ", message.offset)
             on_message(message.value)
+            # self.consumer.commit(offsets=)
 
     def close_consumer(self):
         if self.consumer:
-            self.consumer_thread.join(timeout=5)
             self.consumer.close()
+            self.consumer_thread.join(timeout=5)
             print("Closed Kafka consumer")
 
 kafkaClient = KafkaClient()

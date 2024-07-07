@@ -33,7 +33,6 @@ async def lifespan(app: FastAPI):
     kafkaClient.close_consumer()
     kafkaClient.close_producer()
 
-
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
