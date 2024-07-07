@@ -33,6 +33,7 @@ class KafkaClient:
         self.consumer = KafkaConsumer(
             topic,
             bootstrap_servers=self.bootstrap_servers,
+            enable_auto_commit=True,
             auto_offset_reset='latest',
             group_id=self.group_id,
             value_deserializer=lambda x: json.loads(x.decode('utf-8'))

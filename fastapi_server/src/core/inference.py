@@ -31,12 +31,14 @@ def get_product_keywords(image, transcript):
         
     # unload model from GPU
     phi3Vision.cleanup()
+    
+    print("Starting inference with Ollama...")
 
     prompt_1_2 = (
         "You are an expert shopping assistant tasked with providing product recommendations.\n"
         "You are provided with 30 descriptions of video frames extracted from a Tiktok video.\n"
-        "In 100 words, describe what the video is about, and based on that, suggest 3 products relevant to the context of the video.\n"
-        "Based on the information, describe products relevant to the context of the video.\n"
+        "In 250 words, describe what the video is about, and based on that, suggest 3 products relevant to the context of the video.\n"
+        "The product suggestion should be either be specific items or general categories, depending on the relevance of the context.\n"
         "Context:\n"
         f"{description}"
     )
@@ -54,7 +56,7 @@ def get_product_keywords(image, transcript):
         "You are a online shopping assistant.\n"
         "Provide 3 product search keywords for online shopping platforms from this analysis:\n"
         "You MUST ONLY respond with a JSON array in this exact format: [\"keyword1\", \"keyword2\", \"keyword3\"].\n"
-        "Do not include any other output in your response."
+        "Do not include any other output in your response.\n"
     )
     
     response = ollama.generate(prompt=prompt_2 + intermediate_resp, temperature=0.2)
