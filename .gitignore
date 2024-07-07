@@ -1,7 +1,7 @@
 node_modules/
 
-# ffmpeg generted files
-ffmpeg/output
+# fastapi generated files
+fastapi_server/output
 
 # python virtual env
 venv/

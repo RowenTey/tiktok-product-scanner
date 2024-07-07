@@ -1,47 +1,18 @@
 import Video from "../models/video.js";
-import minioClient from "../config/minio.js";
+import { minioClient, createBucketIfNotExists } from "../config/minio.js";
 import { sendMessage } from "../config/kafka.js";
+import User from "../models/user.js";
 
 const BUCKET_NAME = "videos";
 
-const createBucketIfNotExists = async (bucketName) => {
-	try {
-		const exists = await minioClient.bucketExists(bucketName);
-		if (!exists) {
-			await minioClient.makeBucket(bucketName);
-			console.log(`Bucket '${bucketName}' created successfully.`);
-
-			// Define bucket policy
-			const policy = {
-				Version: "2012-10-17",
-				Statement: [
-					{
-						Effect: "Allow",
-						Principal: "*",
-						Action: ["s3:GetObject"],
-						Resource: [`arn:aws:s3:::${bucketName}/*`],
-					},
-				],
-			};
-
-			// Set bucket policy
-			await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
-			console.log(`Public access policy set for bucket '${bucketName}'.`);
-		} else {
-			console.log(`Bucket '${bucketName}' already exists.`);
-		}
-	} catch (error) {
-		console.error("Error checking or creating bucket:", error);
-		throw error;
-	}
-};
-
 export const uploadVideo = async (req, res) => {
 	try {
-		console.log("uploading video");
-		// Save video to MinIO
+		console.log("Uploading video");
+
+		// Upload video to MinIO
 		await createBucketIfNotExists(BUCKET_NAME);
-		const fileName = `${Date.now()}_${req.file.originalname}`;
+		const userId = req.userId;
+		const fileName = `${userId}/${req.file.originalname}`;
 		const uploadedRes = await minioClient.putObject(
 			BUCKET_NAME,
 			fileName,
@@ -58,6 +29,7 @@ export const uploadVideo = async (req, res) => {
 
 		// Save metadata to MongoDB using Mongoose
 		const video = new Video({
+			userId,
 			title: req.body.title,
 			fileName: fileName,
 			size: req.file.size,
@@ -68,6 +40,7 @@ export const uploadVideo = async (req, res) => {
 		await video.save();
 
 		const kafkaData = {
+			id: video._id,
 			bucket: BUCKET_NAME,
 			fileName: fileName,
 		};
@@ -90,12 +63,20 @@ export const getVideo = async (req, res) => {
 		// Fetch videos metadata from MongoDB with pagination
 		const videos = await Video.find().skip(skip).limit(limit);
 
+		// find each user of the video
+		for (let i = 0; i < videos.length; i++) {
+			const userId = videos[i].userId;
+			const user = await User.findById(userId);
+			videos[i] = { ...videos[i]._doc, username: user.name };
+			console.log(videos[i]);
+		}
+
 		// Get total count of videos
 		const total = await Video.countDocuments();
 
 		// Calculate total pages
 		const totalPages = Math.ceil(total / limit);
-		console.log("getting vidoe", videos);
+
 		res.status(200).json({
 			page,
 			limit,

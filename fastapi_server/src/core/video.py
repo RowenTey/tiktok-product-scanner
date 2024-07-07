@@ -1,20 +1,32 @@
 import io
 import os
+import json
 import shutil
 import whisper
 import base64
 import subprocess
 import numpy as np
 import moviepy.editor as mp
+from moviepy.video.io.VideoFileClip import VideoFileClip
 from .transformer import phi3Vision
+from .minio_client import minioClient
+from .kafka_client import kafkaClient
+from .inference import get_product_keywords
+from enum import Enum
 from PIL import Image
 
+class FrameExtractionMode(Enum):
+    KEYFRAMES = "keyframes"
+    ONE_PER_SECOND = "one_per_second"
+    FIXED = "fixed"
+
+NUM_FIXED_FRAMES = 30
 
 def remove_files_and_directories(target_directory, video_path, audio_path):
     """
     Removes all files and directories recursively from the target_directory.
     Also removes the video_path and audio_path if they exist.
-
+    
     Parameters:
         target_directory (str): Path to the target directory.
         video_path (str): Path to the video file to be removed.
@@ -27,7 +39,7 @@ def remove_files_and_directories(target_directory, video_path, audio_path):
                 file_path = os.path.join(root, name)
                 try:
                     os.remove(file_path)
-                    print(f"Removed file: {file_path}")
+                    # print(f"Removed file: {file_path}")
                 except Exception as e:
                     print(f"Error removing file: {file_path}. Error: {e}")
             for name in dirs:
@@ -42,7 +54,7 @@ def remove_files_and_directories(target_directory, video_path, audio_path):
     if os.path.exists(video_path):
         try:
             os.remove(video_path)
-            print(f"Removed video file: {video_path}")
+            # print(f"Removed video file: {video_path}")
         except Exception as e:
             print(f"Error removing video file: {video_path}. Error: {e}")
 
@@ -50,66 +62,44 @@ def remove_files_and_directories(target_directory, video_path, audio_path):
     if os.path.exists(audio_path):
         try:
             os.remove(audio_path)
-            print(f"Removed audio file: {audio_path}")
+            # print(f"Removed audio file: {audio_path}")
         except Exception as e:
             print(f"Error removing audio file: {audio_path}. Error: {e}")
 
 
-def resize_image_by_half(input_path: str, output_path: str):
-    """
-    Resize an image by reducing its resolution by half and save it to the output path.
-
-    Parameters:
-    - input_path (str): Path to the input image file.
-    - output_path (str): Path to save the resized image file.
-    """
-    try:
-        # Open the image file
-        with Image.open(input_path) as img:
-            # Calculate the new dimensions
-            new_width = img.width // 2
-            new_height = img.height // 2
-
-            # Resize the image
-            resized_img = img.resize((new_width, new_height), Image.ANTIALIAS)
-
-            # Save the resized image
-            resized_img.save(output_path)
-        print(f"Image successfully resized and saved to {output_path}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-
-def ensure_minimum_keyframes(video_buffer, output_directory="output/keyframes", min_frames=9, start_threshold=0.3, step=0.01, min_threshold=0.025):
+def ensure_minimum_keyframes(video_buffer=None, output_directory="output/keyframes", min_frames=9, start_threshold=0.3, step=0.01, min_threshold=0.025, mode=FrameExtractionMode.KEYFRAMES):
     """
     Ensures at least a minimum number of keyframes are extracted by progressively lowering the threshold.
     """
-    current_threshold = start_threshold
+    if mode == FrameExtractionMode.ONE_PER_SECOND:
+        extract_keyframes(video_buffer=video_buffer, output_directory=output_directory, mode=FrameExtractionMode.ONE_PER_SECOND)
+    elif mode == FrameExtractionMode.KEYFRAMES:
+        current_threshold = start_threshold
+        while current_threshold >= min_threshold:
+            # Extract keyframes with the current threshold
+            extract_keyframes(
+                video_buffer=video_buffer, output_directory=output_directory, threshold=current_threshold)
 
-    is_last_threshold = False
-    while current_threshold >= min_threshold:
-        # Extract keyframes with the current threshold
-        extract_keyframes_from_buffer(
-            video_buffer, output_directory, current_threshold)
+            # Count the number of extracted keyframes
+            num_keyframes = len([name for name in os.listdir(
+                output_directory) if os.path.isfile(os.path.join(output_directory, name))])
 
-        # Count the number of extracted keyframes
-        num_keyframes = len([name for name in os.listdir(
-            output_directory) if os.path.isfile(os.path.join(output_directory, name))])
+            # Check if we have extracted enough keyframes
+            if num_keyframes >= min_frames:
+                print(
+                    f"Extracted {num_keyframes} keyframes with threshold {current_threshold}")
+                return
 
-        # Check if we have extracted enough keyframes
-        if num_keyframes >= min_frames:
-            print(
-                f"Extracted {num_keyframes} keyframes with threshold {current_threshold}")
-            return
+            # Lower the threshold for the next iteration
+            current_threshold -= step
 
-        # Lower the threshold for the next iteration
-        current_threshold -= step
-
-    print(
-        f"Minimum threshold reached. Extracted {num_keyframes} keyframes with threshold {current_threshold}")
+        print(
+            f"Minimum threshold reached. Extracted {num_keyframes} keyframes with threshold {current_threshold}")
+    elif mode == FrameExtractionMode.FIXED:
+        extract_keyframes(video_buffer=video_buffer, output_directory=output_directory, mode=FrameExtractionMode.FIXED)
 
 
-def extract_keyframes_from_buffer(video_buffer, output_directory="output/keyframes", threshold=0.3):
+def extract_keyframes(video_buffer = None, output_directory="output/keyframes", threshold=None, mode=FrameExtractionMode.KEYFRAMES):
     """
     Extracts key frames from a video buffer using FFmpeg and saves them in the specified output directory.
 
@@ -132,28 +122,57 @@ def extract_keyframes_from_buffer(video_buffer, output_directory="output/keyfram
 
     # Write the buffer to a temporary file to use with FFmpeg
     temp_video_path = "output/temp_video.mp4"
-    if not os.path.exists(temp_video_path):
+    if video_buffer is not None and not os.path.exists(temp_video_path):
         with open(temp_video_path, "wb") as temp_file:
             temp_file.write(video_buffer.read())
         print("Video buffer written to temporary file")
 
-    # Construct the FFmpeg command
-    ffmpeg_command = [
-        "C:\\Users\\leeja\\Documents\\VSCode\\ffmpeg\\bin\\ffmpeg.exe",
-        "-i", temp_video_path,
-        "-vf", f"select='gt(scene,{threshold})'",
-        "-vsync", "vfr",
-        os.path.join(output_directory, "keyframe_%03d.png")
-    ]
+    if mode == FrameExtractionMode.KEYFRAMES:
+        assert threshold is not None, "Threshold cannot be None"
+        ffmpeg_command = [
+            "C:\\Users\\leeja\\Documents\\VSCode\\ffmpeg\\bin\\ffmpeg.exe",
+            "-i", temp_video_path,
+            "-vf", f"select='gt(scene,{threshold})'",
+            "-vsync", "vfr",
+            os.path.join(output_directory, "keyframe_%03d.png")
+        ]
 
-    try:
-        # Execute the FFmpeg command
-        subprocess.run(ffmpeg_command, check=True)
-        print(
-            f"Key frames extracted successfully and saved in '{output_directory}'")
-    except subprocess.CalledProcessError as e:
-        print(f"Error extracting key frames: {e}")
+        try:
+            # Execute the FFmpeg command
+            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.DEVNULL)
+            print(
+                f"Key frames extracted successfully and saved in '{output_directory}'")
+        except subprocess.CalledProcessError as e:
+            print(f"Error extracting key frames: {e}")
+    elif mode == FrameExtractionMode.ONE_PER_SECOND:
+        ffmpeg_command = [
+             "C:\\Users\\leeja\\Documents\\VSCode\\ffmpeg\\bin\\ffmpeg.exe",
+            "-i", temp_video_path,
+            "-vf", "fps=1",
+            "-vsync", "vfr",
+            os.path.join(output_directory, "keyframe_%03d.png")
+        ]
 
+        try:
+            # Execute the FFmpeg command
+            subprocess.run(ffmpeg_command, check=True, stdout=subprocess.DEVNULL)
+            print(
+                f"Key frames extracted successfully and saved in '{output_directory}'")
+        except subprocess.CalledProcessError as e:
+            print(f"Error extracting key frames: {e}")
+    elif mode == FrameExtractionMode.FIXED:
+        clip = VideoFileClip(temp_video_path)
+        duration = clip.duration
+        interval = duration / NUM_FIXED_FRAMES
+
+        for i in range(NUM_FIXED_FRAMES):
+            print(f"Extracting frame: {i+1}")
+            frame = clip.get_frame(i * interval)
+            img = Image.fromarray(np.uint8(frame))
+            output_path = os.path.join(output_directory, f"keyframe_{i + 1:04d}.png")
+            img.save(output_path)
+
+    
 
 def load_images_from_folder(folder="output/keyframes"):
     """
@@ -220,11 +239,12 @@ def create_image_grid_dynamic(frames, output_path="output/keyframe_grid.png"):
     grid_image.save(output_path)
     print(f"Image grid saved to '{output_path}'")
 
+    return grid_image
+
     # Reduce the resolution by half
     new_width = grid_image.width // 2
     new_height = grid_image.height // 2
-    resized_grid_image = grid_image.resize(
-        (new_width, new_height), Image.BICUBIC)
+    resized_grid_image = grid_image.resize((new_width, new_height), Image.BICUBIC)
 
     # Optionally save the resized image (if needed)
     resized_output_path = output_path.replace(".png", "_resized.png")
@@ -265,11 +285,12 @@ def create_image_row_dynamic(frames, output_path="output/keyframe_row.png"):
     row_image.save(output_path)
     print(f"Image row saved to '{output_path}'")
 
+    return row_image
+
     # Reduce the resolution by half
     new_width = row_image.width // 2
     new_height = row_image.height // 2
-    resized_row_image = row_image.resize(
-        (new_width, new_height), Image.BICUBIC)
+    resized_row_image = row_image.resize((new_width, new_height), Image.BICUBIC)
 
     # Optionally save the resized image (if needed)
     resized_output_path = output_path.replace(".png", "_resized.png")
@@ -299,8 +320,18 @@ def transcribe_audio(audio_path="output/audio.wav"):
         return ""
 
     print(f"Transcribing audio from {audio_path}...")
-    model = whisper.load_model("base")
-    result = model.transcribe(audio_path)
+    model = whisper.load_model("large")
+    # audio = whisper.load_audio(audio_path)
+    # audio = whisper.pad_or_trim(audio)
+    # mel = whisper.log_mel_spectrogram(audio).to(model.device)
+    
+    # _, probs = model.detect_language(mel)
+    # print(f"Detected language: {max(probs, key=probs.get)}")
+
+    # result = model.transcribe(audio_path, language=max(probs, key=probs.get))
+    # # options = whisper.DecodingOptions()
+    # # result = whisper.decode(model, mel, options)
+    result = model.transcribe(audio_path, language="en")
     return result["text"]
 
 
@@ -334,33 +365,59 @@ def image_to_base64(image_path):
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 
-def process_video_buffer(video_buffer: io.BytesIO):
+def process_video_buffer(video_buffer):
+    print("Starting processing of video...")
+
     # Extract keyframes from the video buffer
-    ensure_minimum_keyframes(video_buffer)
+    ensure_minimum_keyframes(video_buffer=video_buffer, mode=FrameExtractionMode.FIXED)
 
     extract_audio_from_buffer()
     transcript = transcribe_audio()
+    print(transcript)
 
     # Load the extracted keyframes
     keyframes = load_images_from_folder()
-
-    # TODO: need to find out how to compress to lower res
-    grid_img = create_image_grid_dynamic(keyframes)
-
-    row_img = create_image_row_dynamic(keyframes)
 
     keywords = []
 
     # Inferencing
     print("Starting inference on row")
-    keywords.extend(phi3Vision.get_product_keywords(
-        row_img, transcript, False))
-
-    print("Starting inference on grid")
-    keywords.extend(phi3Vision.get_product_keywords(grid_img, "", True))
+    keywords.extend(get_product_keywords(keyframes, transcript))
 
     # clean up
-    remove_files_and_directories(
-        "output", "output/temp_video.mp4", "output/audio.wav")
+    print("Cleaning up...")
+    remove_files_and_directories("output", "output/temp_video.mp4", "output/audio.wav")
 
     return keywords
+
+def process_video(id, bucket, filename):
+    print("Starting processing of video...")
+
+    minioClient.download_file(bucket, filename, "output/temp_video.mp4")
+
+    # Extract keyframes from the video buffer
+    ensure_minimum_keyframes(mode=FrameExtractionMode.FIXED)
+
+    extract_audio_from_buffer()
+    transcript = transcribe_audio()
+    print(transcript)
+
+    # Load the extracted keyframes
+    keyframes = load_images_from_folder()
+
+    keywords = []
+
+    # Inferencing
+    print("Getting product keywords...")
+    keywords.extend(get_product_keywords(keyframes, transcript))
+
+    # clean up
+    print("Cleaning up...")
+    remove_files_and_directories("output", "output/temp_video.mp4", "output/audio.wav")
+
+    kafkaClient.send_message(
+        "process-video-complete", 
+        json.dumps({"keywords": keywords, "filename": filename, "id": id})
+    )
+
+    return True

@@ -12,10 +12,9 @@ const producer = kafka.producer({
 
 const consumer = kafka.consumer({ groupId: "video-processor" });
 
-export const runConsumer = async (topic) => {
+export const runConsumer = async (topic, callback) => {
 	await consumer.connect();
 	await consumer.subscribe({ topics: [topic], fromBeginning: true });
-
 	await consumer.run({
 		eachMessage: async ({ topic, partition, message }) => {
 			const messageValue = message.value.toString();
@@ -26,6 +25,7 @@ export const runConsumer = async (topic) => {
 				offset: message.offset,
 				value: messageValue,
 			});
+			callback(messageValue);
 		},
 	});
 };

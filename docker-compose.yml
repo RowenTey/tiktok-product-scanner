@@ -51,7 +51,7 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       # Bob is internal docker network listener
       # Fred is external listener
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_BOB://kafka:29092,LISTENER_FRED://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_BOB://kafka:29092,LISTENER_FRED://10.2.1.15:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_BOB:PLAINTEXT,LISTENER_FRED:PLAINTEXT
       KAFKA_LISTENERS: LISTENER_BOB://kafka:29092,LISTENER_FRED://kafka:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_BOB
@@ -74,7 +74,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://mongodb:27017
+      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017
+      ME_CONFIG_MONGODB_AUTH_USERNAME: team-cooked
+      ME_CONFIG_MONGODB_AUTH_PASSWORD: admin123
     depends_on:
       - mongodb
 
