@@ -7,7 +7,7 @@ from transformers import AutoProcessor, AutoModelForCausalLM
 
 # Generation arguments for the model
 GENERATION_ARGS = {
-    "max_new_tokens": 4096,
+    "max_new_tokens": 500,
     "temperature": 0.0, 
     "do_sample": False,
 }

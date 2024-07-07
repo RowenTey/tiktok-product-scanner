@@ -3,19 +3,22 @@ from .transformer import phi3Vision
 from .ollama import ollama
 
 
-def get_product_keywords(image, transcript, is_grid):
+def get_product_keywords(image, transcript):
     """Generate a detailed description and product recommendations based on the image and transcript."""
     prompt_1 = (
-        "You are given a screenshot from a Tiktok video.\n"
-        "Describe this image. Try recognising specific objects in the frame, use brand names as often as you can.\n"
-        "Do not mention anything related to Tiktok in your response, such as Tiktok logo or the Tiktok username.\n"
+        "You are given a video frame of a Tiktok video.\n"
+        "Describe the video frame in as much detail as possible.\n"
+        "Try recognising objects in the frame, refer to the commonly known brand names of the objects.\n"
+        "NEVER mention or include anything related to Tiktok in your response, such as Tiktok logo or the Tiktok username.\n"
     )
-
 
     # Generate description based on the image and prompt
     # check if image is PIL image or list of PIL images
     if not isinstance(image, list):
         image = [image]
+    
+    phi3Vision.load_model()
+    print("Loaded model!")
         
     description = ""
     for i, img in enumerate(image):
@@ -31,14 +34,14 @@ def get_product_keywords(image, transcript, is_grid):
         "You are a online shopping assistant tasked with helping a user find relevant products based on a given context.\n"
         "You are provided with 30 descriptions of video frames extracted from a Tiktok video.\n"
         "Try to describe what the video is about.\n"
-        "Based on the information, describe products that are relevant to the video.\n"
+        "Based on the information, describe products relevant to the context of the video.\n"
         "Context:\n"
     )
     
     if transcript:
         prompt_1_2 += f" You may also use the audio transcript for further context: {transcript}"
     
-    intermediate_resp = ollama.generate(prompt=prompt_1_2 + description, temperature=0.8)
+    intermediate_resp = ollama.generate(prompt=prompt_1_2 + description, temperature=0.4)
 
     print("\n-----\n")
     print(intermediate_resp)
@@ -61,7 +64,6 @@ def get_product_keywords(image, transcript, is_grid):
     print(keywords)
     
     return keywords
-
 
 
 if __name__ == "__main__":

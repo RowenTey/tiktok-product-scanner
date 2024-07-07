@@ -18,11 +18,11 @@ async def lifespan(app: FastAPI):
     # # Load the ML model
     # phi3Vision.load_model()
     # print("Loaded model!")
-    
-    kafkaClient.start_consumer("process-video", handle_message)
-    kafkaClient.start_producer()
-    
+
     minioClient.connect()
+    
+    kafkaClient.start_producer()
+    kafkaClient.start_consumer("process-video", handle_message)
 
     yield
 
