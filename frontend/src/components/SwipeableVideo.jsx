@@ -5,22 +5,24 @@ import MacbookVid from "../assets/macbook.mp4";
 import { getProducts, getVideos } from "../api";
 import ProductsList from "./ProductsList";
 
-const dummyVideos = [
-    {
-        id: 1,
-        src: JapanVid,
-        title: "Japan",
-    },
-    { id: 2, src: MacbookVid, title: "MacBook" },
-];
+// const dummyVideos = [
+//     {
+//         id: 1,
+//         src: JapanVid,
+//         title: "Japan",
+//     },
+//     { id: 2, src: MacbookVid, title: "MacBook" },
+// ];
 
-const limit = 5;
+const limit = 2;
 
 const SwipeableVideoList = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [playing, setPlaying] = useState(false);
     const [played, setPlayed] = useState(0);
-    const [videos, setVideos] = useState(dummyVideos);
+    const [videos, setVideos] = useState([]);
     const [products, setProducts] = useState([]);
     const [showProducts, setShowProducts] = useState(false);
     const containerRef = useRef(null);
@@ -69,7 +71,7 @@ const SwipeableVideoList = () => {
                 containerRef.current.startY = null;
             }
         },
-        [showProducts]
+        [showProducts, videos]
     );
 
     useEffect(() => {
@@ -84,7 +86,7 @@ const SwipeableVideoList = () => {
     }, [handleTouchStart, handleTouchMove]);
 
     const handleSwipedUp = () => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % videos.length);
+        setCurrentIndex((prevIndex) =>(prevIndex + 1) % videos.length);
         setPlaying(true);
         setPlayed(0);
     };
@@ -115,34 +117,56 @@ const SwipeableVideoList = () => {
         setPlayed(state.played);
     };
 
+    const fetchVideos = async (page) => {
+        try {
+            const response = await getVideos(page, limit);
+            const newVideos = response.data.videos.map(video => ({
+                id: video._id,
+                src: video.presignedUrl,
+                title: video.title,
+            }));
+
+            console.log("New Videos", newVideos);
+    
+            if (newVideos.length === 0) {
+                console.log("No more videos found");
+                return [];
+            }
+    
+            setTotalPages(response.data.totalPages);
+            console.log(`Fetched ${newVideos.length} videos for page ${page}`);
+            return newVideos;
+        } catch (error) {
+            console.error("Error fetching videos:", error);
+            return [];
+        }
+    };
+    
     useEffect(() => {
-        const fetchVideos = async () => {
-            try {
-                const response = await getVideos(1, limit);
-                const videosResults = [];
-                response.data.videos.forEach(async (video) => {
-                    videosResults.push({
-                        id: video._id,
-                        src: video.presignedUrl,
-                        title: video.title,
-                    });
-                });
-                
-                if (videosResults.length === 0) {
-                    console.log("No videos found");
-                    return;
-                }
-                
-                setVideos(videosResults);
-                console.log("Videos fetched: ",  videosResults.length);
-                console.log("SUCCESSFUL GET videos");
-            } catch (error) {
-                console.error("Error fetching videos:", error);
+        const initializeVideos = async () => {
+            const initialVideos = await fetchVideos(1);
+            setVideos(initialVideos);
+            if (initialVideos.length > 0) {
+                setPlaying(true);
             }
         };
-        
-        fetchVideos().then(setPlaying(true));
+    
+        initializeVideos();
     }, []);
+    
+    // Effect to prefetch next batch
+    useEffect(() => {
+        const prefetchNextBatch = async () => {
+            if (currentIndex === videos.length - 1 && currentPage < totalPages) {
+                const nextPage = currentPage + 1;
+                const newVideos = await fetchVideos(nextPage);
+                setVideos(prevVideos => [...prevVideos, ...newVideos]);
+                setCurrentPage(nextPage);
+            }
+        };
+    
+        prefetchNextBatch();
+    }, [currentIndex, videos.length, currentPage, totalPages]);
     
     useEffect(() => {
         const fetchProducts = async () => {
