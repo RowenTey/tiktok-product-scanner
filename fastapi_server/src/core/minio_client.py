@@ -16,7 +16,7 @@ class MinioClient:
                 secret_key=self.secret_key,
                 secure=False
             )
-            print("Connected to MinIo")
+            print("Connected to MinIo!")
         except Exception as e:
             print("Error connecting to MinIO")
 

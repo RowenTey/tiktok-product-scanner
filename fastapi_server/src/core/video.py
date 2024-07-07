@@ -378,18 +378,11 @@ def process_video_buffer(video_buffer):
     # Load the extracted keyframes
     keyframes = load_images_from_folder()
 
-    # grid_img = create_image_grid_dynamic(keyframes)
-    # row_img = create_image_row_dynamic(keyframes)
-
     keywords = []
-    # Inferencing
-    phi3Vision.load_model()
-    print("Loaded model!")
-    print("Starting inference on row")
-    keywords.extend(get_product_keywords(keyframes, transcript, False))
 
-    # print("Starting inference on grid")
-    # keywords.extend(phi3Vision.get_product_keywords(grid_img, transcript, True))
+    # Inferencing
+    print("Starting inference on row")
+    keywords.extend(get_product_keywords(keyframes, transcript))
 
     # clean up
     print("Cleaning up...")
@@ -403,26 +396,23 @@ def process_video(id, bucket, filename):
     minioClient.download_file(bucket, filename, "output/temp_video.mp4")
 
     # Extract keyframes from the video buffer
-    ensure_minimum_keyframes()
+    ensure_minimum_keyframes(mode=FrameExtractionMode.FIXED)
 
     extract_audio_from_buffer()
     transcript = transcribe_audio()
+    print(transcript)
 
     # Load the extracted keyframes
     keyframes = load_images_from_folder()
 
-    grid_img = create_image_grid_dynamic(keyframes)
-    row_img = create_image_row_dynamic(keyframes)
-
     keywords = []
-    # Inferencing
-    print("Starting inference on row")
-    keywords.extend(get_product_keywords(row_img, transcript, False))
 
-    # print("Starting inference on grid")
-    # keywords.extend(phi3Vision.get_product_keywords(grid_img, transcript, True))
+    # Inferencing
+    print("Getting product keywords...")
+    keywords.extend(get_product_keywords(keyframes, transcript))
 
     # clean up
+    print("Cleaning up...")
     remove_files_and_directories("output", "output/temp_video.mp4", "output/audio.wav")
 
     kafkaClient.send_message(

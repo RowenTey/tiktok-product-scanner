@@ -33,13 +33,12 @@ class KafkaClient:
         self.consumer = KafkaConsumer(
             topic,
             bootstrap_servers=self.bootstrap_servers,
-            auto_offset_reset='earliest',
+            auto_offset_reset='latest',
             group_id=self.group_id,
             value_deserializer=lambda x: json.loads(x.decode('utf-8'))
         )
-        # self.consumer_thread = Thread(target=self._consume_messages, args=(on_message,))
-        # self.consumer_thread.start()
-        self._consume_messages(on_message)
+        self.consumer_thread = Thread(target=self._consume_messages, args=(on_message,))
+        self.consumer_thread.start()
         print("Consumer started!")
 
     def _consume_messages(self, on_message):
@@ -51,8 +50,8 @@ class KafkaClient:
 
     def close_consumer(self):
         if self.consumer:
+            self.consumer_thread.join(timeout=5)
             self.consumer.close()
-            # self.consumer_thread.join()
             print("Closed Kafka consumer")
 
 kafkaClient = KafkaClient()
