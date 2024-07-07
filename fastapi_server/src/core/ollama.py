@@ -7,14 +7,14 @@ class Ollama:
         self.endpoint = endpoint
         self.last_used = ""
 
-    def generate(self, prompt, model="llama3:8b-instruct-q8_0"):
+    def generate(self, prompt, model="llama3:8b-instruct-q8_0", temperature=0.4):
 
         payload = json.dumps({
           "model": model,
           "prompt": prompt,
           "stream": False,
           "options": {
-                "temperature": 0.4
+                "temperature": temperature
           }
         })
         

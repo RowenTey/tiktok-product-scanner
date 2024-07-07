@@ -37,8 +37,9 @@ class KafkaClient:
             group_id=self.group_id,
             value_deserializer=lambda x: json.loads(x.decode('utf-8'))
         )
-        self.consumer_thread = Thread(target=self._consume_messages, args=(on_message,))
-        self.consumer_thread.start()
+        # self.consumer_thread = Thread(target=self._consume_messages, args=(on_message,))
+        # self.consumer_thread.start()
+        self._consume_messages(on_message)
         print("Consumer started!")
 
     def _consume_messages(self, on_message):
@@ -50,8 +51,8 @@ class KafkaClient:
 
     def close_consumer(self):
         if self.consumer:
-            # self.consumer.close()
-            self.consumer_thread.join()
+            self.consumer.close()
+            # self.consumer_thread.join()
             print("Closed Kafka consumer")
 
 kafkaClient = KafkaClient()
