@@ -34,7 +34,8 @@ const ProductsList = ({ products, onHideProductsList }) => {
                                 <Product
                                     name={product.name}
                                     price={product.price}
-                                    image={product.image}
+                                    url={product.productUrl}
+                                    image={product.imageSrc}
                                     rating={product.rating}
                                     itemsSold={product.itemsSold}
                                 />

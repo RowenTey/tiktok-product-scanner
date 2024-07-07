@@ -1,17 +1,18 @@
-const Product = ({ name, price, rating, itemsSold }) => {
+/* eslint-disable react/prop-types */
+const Product = ({ name, price, image, url, rating, itemsSold }) => {
     return (
         <>
-            <div className="flex flex-col m-1 p-2 gap-y-5 bg-white rounded-xl">
+            <div className="flex flex-col m-1 p-2 gap-y-5 bg-white rounded-xl curosor-pointer" onClick={() => window.open(url, "_blank")}>
                 <div className="flex w-full h-[5rem] m-auto">
                     <img
-                        src="https://picsum.photos/200/200"
+                        src={image || "https://picsum.photos/200/300"}
                         className="object-contain w-full h-full"
                     />
                 </div>
                 <div className="flex flex-col gap-y-2">
-                    <span className="text-[#a1a1a1] text-base">{name}</span>
+                    <span className="text-stone-900 text-base line-clamp-3">{name}</span>
                     <span className="text-[#d94365] font-bold text-base">
-                        {price}
+                        ${price}
                     </span>
                     <div className="flex flex-row gap-x-1 items-center flex-wrap">
                         <div className="flex flex-row gap-x-0.5 items-center">

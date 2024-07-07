@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 const videoSchema = new mongoose.Schema({
+    userId: { type: String, required: true },
     title: { type: String, required: true },
     fileName: { type: String, required: true },
     size: { type: Number, required: true },
