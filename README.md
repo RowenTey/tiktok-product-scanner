@@ -1,6 +1,6 @@
 # Tiktok Product Scanner 
 
-## 💡Our Solution - Enhancing Tailored Discovery
+## 💡 Our Solution - Enhancing Tailored Discovery
 <p>An advanced solution that takes video inputs, processes them to identify products introduced in the video, and directs users to <b>TikTok Shop</b> to purchase similar products. This solution leverages state-of-the-art machine learning model and GenAI to recognize products and integrates seamlessly with e-commerce platforms.</p>
 
 ## 🧑‍💻 Run Frontend Client
@@ -15,15 +15,6 @@
    npm run dev
    ```
 
-## 📁 Run MongoDB container
-
-1. Go to `root` directory
-2. Run
-   ```
-   docker-compose build
-   docker-compose up
-   ```
-
 ## 💻 Run Backend (Express) Server
 
 1. Go to `backend` directory
@@ -36,7 +27,7 @@
    npm run dev
    ```
 
-## ⚡ Run Backend (Fastapi) Server
+## ⚡ Run Backend (FastAPI) Server
 
 1. Go to `root` directory
 2. Run
@@ -64,37 +55,3 @@
 - [@Lee Juin](https://github.com/Neo-Zenith)
 - [@Shao Wei](https://github.com/shaowei0925)
 
-
-<!-- ## Run object detection using YOLOv5
-
-Remember to use Python v3.8
-
-1. Head over to `object-detection` directory:
-
-   - ```
-     cd ./object-detection
-     ```
-
-1. Create environment:
-
-   - ```
-     python -m virtualenv venv
-     ```
-
-1. Activate environment:
-
-   - ```
-     . venv/bin/activate # macOS/Linux
-     ./venv/scripts/activate # Windows
-     ```
-
-1. Install all dependencies:
-
-   - ```
-     pip install -r requirements.txt
-     ```
-
-1. Start detection script:
-   - ```
-     python detect.py --source 0    # Your default webcam should be 0, can try other values if 0 throws an error
-     ``` -->

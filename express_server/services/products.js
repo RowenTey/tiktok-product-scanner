@@ -23,12 +23,6 @@ export const scrapeProductsFromAmazon = async (keywords) => {
             const url = `https://www.amazon.com/s?k=${encodeURIComponent(keyword)}`;
             await page.goto(url, { waitUntil: "load", timeout: 0 });
 
-            const pageContent = await page.content();
-            fs.writeFile('pageContent.html', pageContent, (err) => {
-                if (err) throw err;
-                console.log('The file has been saved!');
-            });
-
             const items = await page.$$(".s-result-item");
             console.log("Num elements found: ", items.length);
 
@@ -36,26 +30,6 @@ export const scrapeProductsFromAmazon = async (keywords) => {
                 console.log("No products found for keyword: ", keyword);
                 continue;
             }
-
-            // const scrapedProductsPromise = items.slice(0, 5).map(async (item) => {
-            //     const name = await item.$eval("span.a-text-normal", (el) => el.textContent.trim());
-            //     const price = await item.$eval(".a-price-whole", (el) => el.textContent.trim());
-            //     const image = await item.$eval("img.s-image", (el) => el.src);
-            //     const url = await item.$eval("a.a-link-normal", (el) => el.href);
-
-            //     return {
-            //         name,
-            //         price,
-            //         image,
-            //         url,
-            //         ratings: Number((2 + Math.random() * 3).toFixed(2)),
-            //         itemsSold: Math.floor(Math.random() * 2000),
-            //     };
-            // });
-
-            // const scrapedProducts = await Promise.all(scrapedProductsPromise);
-            // console.log("Scraped products: ", scrapedProducts);
-            // products.push(...scrapedProducts);
 
             const itemPromises = items.map(async (item) => {
                 try {
@@ -130,12 +104,6 @@ export const scrapeProductsFromEbay = async (keywords) => {
 
             const url = `https://www.ebay.com.sg/sch/i.html?_from=R40&_nkw=${encodeURIComponent(keyword)}&_sacat=0`;
             await page.goto(url, { waitUntil: "load", timeout: 0 });
-
-            const pageContent = await page.content();
-            fs.writeFile('pageContent.html', pageContent, (err) => {
-                if (err) throw err;
-                console.log('The file has been saved!');
-            });
 
             const items = await page.$$(".s-item__wrapper");
             console.log("Num elements found: ", items.length);

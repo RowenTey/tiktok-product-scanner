@@ -211,7 +211,7 @@ const SwipeableVideoList = () => {
                         <div className="flex flex-col absolute bottom-2.5 left-2 gap-y-3">
                             {products.length > 0 && (
                                 <button
-                                    className="bg-stone-900 p-2 flex gap-x-2 items-center rounded-xl"
+                                    className="w-fit bg-stone-900 p-2 flex gap-x-2 items-center rounded-xl"
                                     onClick={() => {setShowProducts(true)}}
                                 >
                                     <svg

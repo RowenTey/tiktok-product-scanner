@@ -6,7 +6,17 @@ import { onKeywordsExtracted } from "./services/video.js";
 import { connectProducer, runConsumer } from "./config/kafka.js";
 
 const app = express();
-app.use(cors());
+app.use(cors(
+  {
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    allowedHeaders: ["Content-Type", "Origin", "Accept", "Depth", "User-Agent", "X-File-Size", "X-Requested-With", "If-Modified-Since", "X-File-Name", "Cache-Control", "Authorization"],
+    exposedHeaders: ["Content-Length", "Content-Range"],
+    credentials: true,
+    maxAge: 3600
+  }
+));
+// app.use(cors())
 app.use(express.json());
 
 app.get("/", (req, res) => {

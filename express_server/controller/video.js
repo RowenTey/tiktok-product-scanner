@@ -89,3 +89,32 @@ export const getVideo = async (req, res) => {
 		res.status(500).json({ error: "Error retrieving videos" });
 	}
 };
+
+export const getVideoByUser = async (req, res) => {
+	try {
+		const page = parseInt(req.query.page) || 1;
+		const limit = parseInt(req.query.limit) || 2;
+		const userId = req.userId;
+		const skip = (page - 1) * limit;
+
+		// Fetch videos with userId from MongoDB with pagination
+		const videos = await Video.find({ userId: userId }).skip(skip).limit(limit);
+
+		// Get total count of videos
+		const total = await Video.countDocuments();
+
+		// Calculate total pages
+		const totalPages = Math.ceil(total / limit);
+
+		res.status(200).json({
+			page,
+			limit,
+			totalPages,
+			totalVideos: total,
+			videos: videos,
+		});
+	} catch (error) {
+		console.error("Error retrieving videos:", error);
+		res.status(500).json({ error: "Error retrieving videos" });
+	}
+};
