@@ -1,7 +1,9 @@
-# Tiktok Product Scanner 
+# Tiktok Product Scanner
 
 ## 💡 Our Solution - Enhancing Tailored Discovery
 <p>An advanced solution that takes video inputs, processes them to identify products introduced in the video, and directs users to <b>TikTok Shop</b> to purchase similar products. This solution leverages state-of-the-art machine learning model and GenAI to recognize products and integrates seamlessly with e-commerce platforms.</p>
+
+![architecture.png](frontend\public\architecture.png)
 
 ## 🧑‍💻 Run Frontend Client
 
@@ -39,6 +41,7 @@
 4. Docs is at http://127.0.0.1:8000/docs
 
 ## 🔨Tech Stack
+
 <p>
 <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white">
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" >
@@ -49,6 +52,7 @@
 </p>
 
 ## 🧠 Contributors - Team Cooked 🧑‍🍳
+
 - [@Rowen Tey](https://github.com/RowenTey)
 - [@Jack Sonz](https://github.com/DrC0ns0le)
 - [@Ivan Lim](https://github.com/limivann)

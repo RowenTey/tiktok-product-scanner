@@ -31,21 +31,25 @@ def get_product_keywords(image, transcript):
         
     # unload model from GPU
     phi3Vision.cleanup()
+    
+    print("Starting inference with Ollama...")
 
     prompt_1_2 = (
-        "You are a expert shopping assistant tasked with providing product recommendations.\n"
-        "You are provided with 30 descriptions of video frames extracted from a Tiktok video\n"
-        "Try to describe what the video is about, and based on that, suggest 3 products relevant to the context of the video.\n"
-        "Based on the information, describe products relevant to the context of the video.\n"
+        "You are an expert shopping assistant tasked with providing product recommendations.\n"
+        "You are provided with 30 descriptions of video frames extracted from a Tiktok video.\n"
+        "In 250 words, describe what the video is about, and based on that, suggest 3 products relevant to the context of the video.\n"
         "Context:\n"
+        f"{description}"
     )
     
     if transcript:
-        prompt_1_2 += f" You may also use the audio transcript for further context: {transcript}"
+        prompt_1_2 += f"\nYou may also use the audio transcript for further context: {transcript}"
+        
+    print("Phase 2 prompt: " + prompt_1_2)
     
-    intermediate_resp = ollama.generate(prompt=prompt_1_2 + description, temperature=0.4)
+    intermediate_resp = ollama.generate(prompt=prompt_1_2, temperature=0.4)
 
-    print("\n-----\n")
+    print("\n-----\n") 
     print(intermediate_resp)
 
     # Prepare prompt for product recommendation
@@ -53,8 +57,10 @@ def get_product_keywords(image, transcript):
         "You are a online shopping assistant.\n"
         "Provide 3 product search keywords for online shopping platforms from this analysis:\n"
         "You MUST ONLY respond with a JSON array in this exact format: [\"keyword1\", \"keyword2\", \"keyword3\"].\n"
-        "Do not include any other output in your response."
+        "Do not include any other output in your response.\n"
     )
+    
+    print("Phase 3 prompt: " + prompt_2)
     
     response = ollama.generate(prompt=prompt_2 + intermediate_resp, temperature=0.2)
 
