@@ -3,7 +3,9 @@
 ## 💡 Our Solution - Enhancing Tailored Discovery
 <p>An advanced solution that takes video inputs, processes them to identify products introduced in the video, and directs users to <b>TikTok Shop</b> to purchase similar products. This solution leverages state-of-the-art machine learning model and GenAI to recognize products and integrates seamlessly with e-commerce platforms.</p>
 
-![architecture.png](frontend/public/architecture.png)
+<div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+   <img src="frontend/public/architecture.png" style="width:100%" />
+</div>
 
 ## 🧑‍💻 Run Frontend Client
 
